@@ -1,9 +1,12 @@
+from django.db.models import Sum
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.shortcuts import render
 from .models import *
 from .forms import *
+
+from .models import Product
 
 now = timezone.now()
 
@@ -119,24 +122,38 @@ def product_new(request):
 
 @login_required
 def product_edit(request, pk):
-    service = get_object_or_404(Service, pk=pk)
+    product = get_object_or_404(Product, pk=pk)
     if request.method == "POST":
-        form = ProductForm(request.POST, instance=pk)
+        form = ProductForm(request.POST, instance=product)
         if form.is_valid():
             product = form.save()
-            # service.customer = service.id
             product.updated_date = timezone.now()
             product.save()
-            products = Service.objects.filter(created_date__lte=timezone.now())
+            products = Product.objects.filter(created_date__lte=timezone.now())
             return render(request, 'crm/product_list.html', {'products': products})
     else:
         # print("else")
-        form = ProductForm(instance=pk)
+        form = ProductForm(instance=product)
     return render(request, 'crm/product_edit.html', {'form': form})
 
 
 @login_required
 def product_delete(request, pk):
-    product = get_object_or_404(Customer, pk=pk)
+    product = get_object_or_404(Product, pk=pk)
     product.delete()
     return redirect('crm:product_list')
+
+
+@login_required
+def summary(request, pk):
+    customer = get_object_or_404(Customer, pk=pk)
+    customers = Customer.objects.filter(created_date__lte=timezone.now())
+    services = Service.objects.filter(cust_name=pk)
+    products = Product.objects.filter(cust_name=pk)
+    sum_service_charge = Service.objects.filter(cust_name=pk).aggregate(Sum('service_charge'))
+    sum_product_charge = Product.objects.filter(cust_name=pk).aggregate(Sum('charge'))
+    return render(request, 'crm/summary.html', {'customers': customers,
+                                                'products': products,
+                                                'services': services,
+                                                'sum_service_charge': sum_service_charge,
+                                                'sum_product_charge': sum_product_charge, })
