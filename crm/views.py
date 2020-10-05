@@ -1,3 +1,5 @@
+from asyncio import Task
+
 from django.db.models import Sum
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -144,6 +146,9 @@ def product_delete(request, pk):
     return redirect('crm:product_list')
 
 
+
+
+
 @login_required
 def summary(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
@@ -152,8 +157,9 @@ def summary(request, pk):
     products = Product.objects.filter(cust_name=pk)
     sum_service_charge = Service.objects.filter(cust_name=pk).aggregate(Sum('service_charge'))
     sum_product_charge = Product.objects.filter(cust_name=pk).aggregate(Sum('charge'))
+    # total = aggregate(Sum('sum_service_charge', 'sum_product_charge'))
     return render(request, 'crm/summary.html', {'customers': customers,
                                                 'products': products,
                                                 'services': services,
                                                 'sum_service_charge': sum_service_charge,
-                                                'sum_product_charge': sum_product_charge, })
+                                                'sum_product_charge': sum_product_charge,})

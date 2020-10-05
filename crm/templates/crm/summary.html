@@ -32,14 +32,14 @@
     <table class="table table-striped table-bordered table-hover">
         <thead>
             <tr class="bg-info">
-                <th>Total of Charges</th>
+                <th>Total of Product and Service Charges</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                {% with sum_service_charge, sum_product_charge %}
-                <td>{{ sum_service_charge|add:sum_product_charge|intcomma }}</td>
-                {% endwith %}
+                <td>
+                    {{ sum_service_charge.service_charge__sum|add:sum_product_charge.charge__sum|intcomma }}
+                </td>
             </tr>
         </tbody>
     </table>
